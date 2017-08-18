@@ -1,41 +1,47 @@
-class Segment{
-  float segmentLength = 20, segmentWidth = 5, angle = 90, strength = .08;
-  PVector position, velocity;
-  Ball ball;
-  
-  public Segment(Ball ball){
-    rectMode(CENTER);
-    this.ball = ball;
-    position = new PVector(width / 2, height / 2);
-    velocity = new PVector(position.x, position.y);
-    velocity.normalize();
-    println(velocity.y);
+class Segment {
+  float x, y, angle, len;
+  PVector a;
+  PVector b = new PVector();
+
+  public Segment(float x, float y, float angle, float len) {
+    this.x = x;
+    this.y = y;
+    this.angle = angle;
+    this.len = len;
+    this.a = new PVector(x, y);
+    strokeWeight(5);
   }
-  
-  public void update(){
-    position.add(velocity);
-    angle = degrees(velocity.heading()) + 90;
-    if(ball.position.x < position.x){
-      velocity.x -= strength;
-    } else if (ball.position.x > position.x) {
-       velocity.x += strength; 
-    }
-    if(ball.position.y < position.y){
-      velocity.y -= strength; 
-    } else if (ball.position.y > position.y) {
-      velocity.y += strength; 
-    }
-    if(velocity.x < -1) velocity.x = -1;
-    if(velocity.x > 1) velocity.x = 1;
-    if(velocity.y < -1) velocity.y = -1;
-    if(velocity.y > 1) velocity.y = 1;
+
+  private void calculateA() {
+    float dx = b.x + len * cos(angle);
+    float dy = b.y + len * sin(angle);
+    a.set(dx, dy);
   }
-  
-  public void drawSegment(){
-    pushMatrix();
-    translate(position.x, position.y);
-    rotate(radians(angle));
-    rect(0,0, segmentWidth, segmentLength);
-    popMatrix();
+
+  public void calculateB() {
+    float dx = a.x + len * cos(angle); 
+    float dy = a.y + len * sin(angle);
+    b.set(dx, dy);
+  }
+
+  public void follow(float targetX, float targetY) {
+    float dx = targetX - a.x;
+    float dy = targetY - a.y;
+    angle = atan2(dy, dx);
+    a.x = targetX - len * cos(angle);
+    a.y = targetY - len * sin(angle);
+  }
+
+  public void returnToFixedPoint(float targetX, float targetY) {
+    float dx = targetX - b.x;
+    float dy = targetY - b.y;
+    angle = atan2(dy, dx);
+    b.x = targetX - len * cos(angle);
+    b.y = targetY - len * sin(angle);
+  }
+
+  public void drawSegment() {
+    line(a.x, a.y, b.x, b.y);
+    //ellipse((a.x + b.x) / 2, (a.y + b.y) / 2, len, len);
   }
 }
